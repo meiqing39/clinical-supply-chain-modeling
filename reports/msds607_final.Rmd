@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Run Backend script first (pipeline)
 
-```{r}
+```{r run-scripts, results='hide', message=FALSE, warning=FALSE}
 source("../scripts/cdc_api_pull.R")
 source("../scripts/fda_web_scraper.R")
 source("../scripts/clean_data.R")
