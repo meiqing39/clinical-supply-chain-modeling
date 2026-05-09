@@ -1,0 +1,122 @@
+---
+title: "msds607_final"
+author: "Mei Qi Ng"
+date: "`r Sys.Date()`"
+output: 
+  html_document
+  toc: true
+  toc-float: true
+    theme: flatly
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Run Backend script first (pipeline)
+
+```{r}
+source("../scripts/cdc_api_pull.R")
+source("../scripts/fda_web_scraper.R")
+source("../scripts/clean_data.R")
+```
+
+# Load R packages and processed data set
+
+```{r}
+library(here)
+library(tidyverse)
+library(scales)
+
+
+supply_data <- read_csv(here("data/processed/clean_supply_data.csv"))
+```
+
+## Introduction: Motivation
+
+Managing the medical laboratory coagulation instrument lines (such as the Stago STA R Evolution) during the 2020 pandemic highlighted a severe operational bottleneck: sudden epidemiological shifts rapidly deplete the essential inventory such as the sodium citrate blood collection tubes (blue). This project models the correlation and lag time between sudden spikes in COVID-19 cases and the subsequent national shortages of highly specialized diagnostic inventory used in many critical care facilities.
+
+## Obtain: Data Acquisition & Challenges
+
+This project utilizes two distinct data sources:
+
+-   **Epidemiological Data:** Time-series case data ingested via raw CSV from the Johns Hopkins University (JHU) CSSE GitHub repository.
+
+-   **Supply Chain Data:** Medical device shortage logs dynamically scraped from the FDA website using the rvest HTML parsing library.
+
+**Technical Challenge:**
+
+-   Website Bot blocker: During the extraction phase, the FDA website blocked automated R scraping requests that was sent on R. To bypass this, the pipeline utilizes the httr package to insert the custom HTTP User-Agent headers, spoofing a standard web browser to retrieve the HTML tables smoothly.
+
+-   Reproducible: Another major hurdle was making sure the backend scripts created could be sourced dynamically regardless of user's operating system or local working directory was a huge challenge but by using the source() function I was able to connect the data pipelines and run them to ensure reproducibility.
+
+-   Data disconnect: The last challenge was the process of debugging and realizing that the FDA API updates daily and is a live dashboard. When shortages are resolved, the information is removed while the JHU Covid data stopped at March 2023. This model still work and can be applied in other yearly or 2 year investigation data when overlapping data does exist in two different data sources.
+
+## Scrub: Data Transformation
+
+```{r data-transformation}
+
+# Backend R script "clean_data.R" performed several transformations:
+# 1. Wide-to-Long: Pivoted the JHU date columns into a long time-series format.
+# 2. Date Formatting: Used lubridate and Regex function to extract and parse dates.
+# 3. Feature Engineering: Created a binary 'Shortage_Flag' column.
+
+glimpse(supply_data)
+```
+
+## Explorative Analysis
+
+```{r stats}
+
+# Pandemic wave summary statistics
+summary(supply_data$New_Cases)  #summarize column New_Cases
+
+# Epidemiological Curve
+ggplot(supply_data, aes(x = Date, y = New_Cases)) +
+  geom_line(color = "blue") +
+  scale_y_continuous(labels = comma) + #add commas to y axis number
+  labs(title = "Daily New COVID-19 Cases (US)",
+       x = "Date", y = "New Cases")
+```
+
+## Model: Time-Series Correlation
+
+To understand how case spikes impact the supply chain, the time delay (lag) was looked at.
+
+```{r model}
+
+# Cross-Correlation Function (ccf) to mathematically determine how many days after a spike in cases FDA reports a shortage.
+
+# Time series objects conversion
+ts_cases <- ts(supply_data$New_Cases)
+ts_shortages <- ts(supply_data$Shortage_Flag)
+
+# Calculate cross correlation
+ccf_result <- ccf(ts_cases, ts_shortages, lag.max = 60, plot = FALSE)
+
+# Extract lag with the highest correlation
+optimal_lag <- ccf_result$lag[which.max(ccf_result$acf)] |> 
+  print()
+
+```
+
+**Based on what was calculated in the cross correlation results and extracting the time lag with the highest correlation, the optimal time lag between a case spike and a diagnostic shortage is 5 days**
+
+## Concusion: Interpretation
+
+Based on the cross correlation modeling, there is a mathematically significant lag of `r optimal_lag` days between a surge in COVID 19 cases and the official logging of a diagnostic shortage for blood collection tubes.
+
+```{r conclusion-graphic}
+
+# Timeline of cases against the timeline of FDA shortage reports plot
+ggplot(supply_data, aes(x = Date)) +
+  geom_line(aes(y = New_Cases), color = "gray") +
+  geom_vline(data = filter(supply_data, Shortage_Flag == 1), 
+             aes(xintercept = Date), color = "red", linetype = "dashed") +
+  scale_y_continuous(labels = comma) +
+  labs(title = "Epidemiological Surges vs. FDA Shortage Reports",
+       subtitle = "Red dashed lines indicate days where a diagnostic shortage was logged.",
+       x = "Date", y = "New Cases") +
+  theme_minimal()
+
+```
