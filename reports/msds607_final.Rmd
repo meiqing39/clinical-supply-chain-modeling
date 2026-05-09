@@ -4,6 +4,7 @@ author: "Mei Qi Ng"
 date: "`r Sys.Date()`"
 output: 
   html_document:
+    code_folding: hide
     toc: true
     toc_float: true
     theme: flatly
@@ -21,7 +22,7 @@ source("../scripts/fda_web_scraper.R")
 source("../scripts/clean_data.R")
 ```
 
-# Load R packages and processed data set
+## Load R packages and processed data set
 
 ```{r}
 library(tidyverse)
@@ -39,17 +40,29 @@ Managing the medical laboratory coagulation instrument lines (such as the Stago 
 
 This project utilizes two distinct data sources:
 
--   **Epidemiological Data:** Time-series case data ingested via raw CSV from the Johns Hopkins University (JHU) CSSE GitHub repository.
+-   **Epidemiological Data:** Time series case data ingested via raw CSV from the Johns Hopkins University (JHU) CSSE GitHub repository.
 
 -   **Supply Chain Data:** Medical device shortage logs dynamically scraped from the FDA website using the rvest HTML parsing library.
 
 **Technical Challenge:**
 
--   Website Bot blocker: During the extraction phase, the FDA website blocked automated R scraping requests that was sent on R. To bypass this, the pipeline utilizes the httr package to insert the custom HTTP User-Agent headers, spoofing a standard web browser to retrieve the HTML tables smoothly.
+-  **Website Bot blocker:** During the extraction phase, the FDA website blocked automated R scraping requests that was sent on R. To bypass this, the pipeline utilizes the httr package to insert the custom HTTP User-Agent headers, spoofing a standard web browser to retrieve the HTML tables smoothly.
 
--   Reproducible: Another major hurdle was making sure the backend scripts created could be sourced dynamically regardless of user's operating system or local working directory was a huge challenge but by using the source() function I was able to connect the data pipelines and run them to ensure reproducibility.
+-  **Reproducible**: Another major hurdle was making sure the backend scripts created could be sourced dynamically regardless of user's operating system or local working directory was a huge challenge but by using the source() function I was able to connect the data pipelines and run them to ensure reproducibility.
 
--   Data disconnect: The last challenge was the process of debugging and realizing that the FDA API updates daily and is a live dashboard. When shortages are resolved, the information is removed while the JHU Covid data stopped at March 2023. This model still work and can be applied in other yearly or 2 year investigation data when overlapping data does exist in two different data sources.
+-  **Data disconnect**: The last challenge was the process of debugging and realizing that the FDA API updates daily and is a live dashboard. When shortages are resolved, the information is removed while the JHU Covid data stopped at March 2023. This model still works and can be applied in other yearly or 2 year investigation data when overlapping data does exist in two different data sources.
+
+**Acknowledgments & Citations:**
+
+* **Data Source (API/Repo):** Dong, E., Du, H., & Gardner, L. (2020). *An interactive web-based dashboard to track COVID-19 in real time*. The Lancet Infectious Diseases. Data retrieved from the Johns Hopkins University CSSE COVID-19 Data Repository: https://github.com/CSSEGISandData/COVID-19
+
+* **Data Source (Web Scrape):** U.S. Food and Drug Administration (FDA). (2026). *Medical Device Shortages List*. Retrieved from https://www.fda.gov/medical-devices/medical-device-supply-chain-and-shortages/medical-device-shortages-list
+
+* **Workflow & Architecture:** Wickham, H., Çetinkaya-Rundel, M., & Grolemund, G. (2023). *R for Data Science (2nd ed.)*. O'Reilly Media. 
+
+* **AI Assistance:** Gemini Pro - assist with troubleshooting syntax errors, regular expressions for extracting FDA shortage dates, create the `httr` bot-blocker bypass, and resolve directory pathing errors.
+  * *AI citation - (Google DeepMind. (2026). Gemini Pro [Large language model]. https://gemini.google.com. Accessed May 9, 2026)*
+
 
 ## Scrub: Data Transformation
 
@@ -77,6 +90,11 @@ ggplot(supply_data, aes(x = Date, y = New_Cases)) +
   labs(title = "Daily New COVID-19 Cases (US)",
        x = "Date", y = "New Cases")
 ```
+
+**Observations:**
+The summary statistics and epidemiological curve reveal the pandemic's voltality. While the median daily new case count sits at 55,885, the maximum single day spike reached a massive 1,354,508 cases during the Winter 2021/2022 Omicron wave. Translating this variance to the laboratory, these sudden surges represent an unexpected shock to diagnostic supply chains, explaining why some inventory forecasting models may failed. 
+
+Additionally, the summary statistics reveal a minimum value of -3,862 cases. This is a known anomaly in the JHU dataset representing administrative corrections, where health departments adjust historical over-reporting.
 
 ## Model: Time-Series Correlation
 
