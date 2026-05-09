@@ -24,12 +24,11 @@ source("../scripts/clean_data.R")
 # Load R packages and processed data set
 
 ```{r}
-library(here)
 library(tidyverse)
 library(scales)
 
 
-supply_data <- read_csv(here("data/processed/clean_supply_data.csv"))
+supply_data <- read_csv("../data/processed/clean_supply_data.csv")
 ```
 
 ## Introduction: Motivation
