@@ -1,11 +1,11 @@
 ---
-title: "msds607_final"
+title: "Clinical Supply Chain Modeling: Epidemiological Impact on Diagnostics"
 author: "Mei Qi Ng"
 date: "`r Sys.Date()`"
 output: 
-  html_document
-  toc: true
-  toc-float: true
+  html_document:
+    toc: true
+    toc_float: true
     theme: flatly
 ---
 
