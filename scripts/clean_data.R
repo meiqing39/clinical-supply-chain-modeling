@@ -28,9 +28,22 @@ fda_clean <- fda_raw %>%
   mutate(Date = ymd(str_extract(date_yyyy_mm_dd, "\\d{4}/\\d{2}/\\d{2}"))) %>%
   select(Date, category, product_code_description, reason_for_interruption_per_506j) #pick columns from table for time-series analysis
 
-#Merge tables
+
+# Data Insert Test & Merging 
+#Live FDA site deletes historical 2020/2021 shortage, will test by add in synthetic historical markers to test time-series model
+historical_shortages <- tibble(
+  Date = ymd(c("2020-07-15", "2020-11-20", "2021-08-10", "2022-01-05")),
+  category = "Simulated Historical",
+  product_code_description = "Simulated Pandemic Blood Tube Shortage",
+  reason_for_interruption_per_506 = "Demand increase due to pandemic spike")
+
+# Bind made-up historical data to live scraper 
+fda_combined <- fda_clean %>%
+  bind_rows(historical_shortages)
+
+# Now perform the Left Join using the combined dataset
 final_merged_data <- covid_clean %>%
-  left_join(fda_clean, by = "Date") %>% # Keep covid timelime + attach fda shortage 
+  left_join(fda_combined, by = "Date") %>%  #keep covid timeline + attach fda shortage
   mutate(Shortage_Flag = ifelse(!is.na(product_code_description), 1, 0)) #Binary indictor, 1 = shortage and 0 = none
 
 # Save to the Processed Folder
