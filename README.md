@@ -13,7 +13,7 @@ A data pipeline and time-series analysis modeling the impact of epidemiological 
 * **Patient Care:** Models and protects diagnostic turnaround times to ensure physicians get patient results without delay.
 * **Operations:** Provides data-driven insights for laboratory managers to allocate staffing and reagents during peak hospital capacity.
 
-### Biopharma & HealthTech (Regeneron / Google Health)
+### Biopharma and HealthTech 
 * **Data Engineering:** Uses modular R programming patterns built for production-readiness and clear data reproducibility.
 * **Logistics:** Links public health data directly to manufacturing and distribution signals for biological materials.
 
