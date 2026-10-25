@@ -9,13 +9,14 @@ A data pipeline and time-series analysis modeling the impact of epidemiological 
 
 ## Industry Applications
 
-### Healthcare & Hospital Networks
-* **Patient Care:** Models and protects diagnostic turnaround times to ensure physicians get patient results without delay.
-* **Operations:** Provides data-driven insights for laboratory managers to allocate staffing and reagents during peak hospital capacity.
+### Clinical & Health System Operations
+* **Turnaround Time Optimization:** Models diagnostic testing throughput to support physicians in receiving time-sensitive patient results without operational delays.
+* **Laboratory Resource Allocation:** Provides actionable, data-driven insights for hospital operations managers to optimize laboratory staffing and reagent inventory levels during high-occupancy census periods.
 
-### Biopharma and HealthTech
-* **Data Engineering:** Uses modular R programming patterns built for production-readiness and clear data reproducibility.
-* **Logistics:** Links public health data directly to manufacturing and distribution signals for biological materials.
+### Biopharma & HealthTech Infrastructure
+* **Reproducible Data Pipelines:** Implements modular R programming patterns engineered for production-readiness, data verification, and strict regulatory compliance environments.
+* **Predictive Logistics:** Translates external public health and epidemiological data streams into direct supply signals for clinical manufacturing and distribution workflows.
+
 
 ## Directory Structure
 The repository is split into isolated directories to maintain clean data and code separation:
